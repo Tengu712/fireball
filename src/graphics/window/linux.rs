@@ -1,6 +1,8 @@
 // use std::ffi::CString;
-use std::os::raw::*;
+use std::{ffi::CString, os::raw::*};
 
+#[allow(non_camel_case_types)]
+type xcb_atom_t = u32;
 #[allow(non_camel_case_types)]
 type xcb_colormap_t = u32;
 #[allow(non_camel_case_types)]
@@ -12,6 +14,8 @@ type xcb_visualid_t = u32;
 #[allow(non_camel_case_types)]
 type xcb_window_t = u32;
 
+const XCB_ATOM_STRING: xcb_atom_t = 31;
+const XCB_ATOM_WM_NAME: xcb_atom_t = 39;
 const XCB_COPY_FROM_PARENT: u8 = 0;
 const XCB_CW_EVENT_MASK: u32 = 2048;
 const XCB_EVENT_MASK_EXPOSURE: u32 = 32768;
@@ -81,6 +85,16 @@ struct xcb_void_cookie_t {
 #[link(name = "xcb")]
 extern "C" {
     fn xcb_connect(displayname: *const c_char, screenp: *mut c_int) -> *const xcb_connection_t;
+    fn xcb_change_property(
+        c: *const xcb_connection_t,
+        mode: u8,
+        window: xcb_window_t,
+        property: xcb_atom_t,
+        type_: xcb_atom_t,
+        format_: u8,
+        data_len: u32,
+        data: *const c_void,
+    ) -> xcb_void_cookie_t;
     fn xcb_create_window(
         c: *const xcb_connection_t,
         depth: u8,
@@ -108,7 +122,7 @@ pub struct Window {
     connection: *const xcb_connection_t,
 }
 impl super::WindowImpl for Window {
-    fn new(width: i32, height: i32, _: &'static str, _: bool) -> Self {
+    fn new(width: i32, height: i32, title: &'static str, _: bool) -> Self {
         let connection = unsafe { xcb_connect(std::ptr::null(), std::ptr::null_mut()) };
         let screen = unsafe { xcb_setup_roots_iterator(xcb_get_setup(connection)).data };
         let wid = unsafe { xcb_generate_id(connection) };
@@ -127,6 +141,19 @@ impl super::WindowImpl for Window {
                 (*screen).root_visual,
                 XCB_CW_EVENT_MASK,
                 [XCB_EVENT_MASK_EXPOSURE].as_ptr() as *const c_void,
+            )
+        };
+        let title_cstr = CString::new(title).unwrap();
+        unsafe {
+            xcb_change_property(
+                connection,
+                0,
+                wid,
+                XCB_ATOM_WM_NAME,
+                XCB_ATOM_STRING,
+                8,
+                title_cstr.to_bytes().len() as u32,
+                title.as_ptr() as *const c_void,
             )
         };
         unsafe { xcb_map_window(connection, wid) };
