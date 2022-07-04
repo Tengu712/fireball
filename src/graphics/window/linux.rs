@@ -13,8 +13,18 @@ type xcb_visualid_t = u32;
 type xcb_window_t = u32;
 
 const XCB_COPY_FROM_PARENT: u8 = 0;
+const XCB_CW_EVENT_MASK: u32 = 2048;
+const XCB_EVENT_MASK_EXPOSURE: u32 = 32768;
 const XCB_WINDOW_CLASS_INPUT_OUTPUT: u16 = 1;
 
+#[repr(C)]
+struct xcb_generic_event_t {
+    response_type: u8,
+    pad0: u8,
+    sequence: u16,
+    pad: [u32; 7],
+    full_sequence: u32,
+}
 #[repr(C)]
 struct xcb_screen_iterator_t {
     data: *const xcb_screen_t,
@@ -71,9 +81,6 @@ struct xcb_void_cookie_t {
 #[link(name = "xcb")]
 extern "C" {
     fn xcb_connect(displayname: *const c_char, screenp: *mut c_int) -> *const xcb_connection_t;
-    fn xcb_setup_roots_iterator(R: *const xcb_setup_t) -> xcb_screen_iterator_t;
-    fn xcb_get_setup(c: *const xcb_connection_t) -> *const xcb_setup_t;
-    fn xcb_generate_id(c: *const xcb_connection_t) -> u32;
     fn xcb_create_window(
         c: *const xcb_connection_t,
         depth: u8,
@@ -89,12 +96,19 @@ extern "C" {
         value_mask: u32,
         value_list: *const c_void,
     ) -> xcb_void_cookie_t;
-    fn xcb_map_window(c: *const xcb_connection_t, window: xcb_window_t) -> xcb_void_cookie_t;
     fn xcb_flush(c: *const xcb_connection_t) -> c_int;
+    fn xcb_get_setup(c: *const xcb_connection_t) -> *const xcb_setup_t;
+    fn xcb_generate_id(c: *const xcb_connection_t) -> u32;
+    fn xcb_map_window(c: *const xcb_connection_t, window: xcb_window_t) -> xcb_void_cookie_t;
+    fn xcb_setup_roots_iterator(R: *const xcb_setup_t) -> xcb_screen_iterator_t;
+    fn xcb_wait_for_event(c: *const xcb_connection_t) -> *const xcb_generic_event_t;
 }
 
-impl super::Window {
-    pub fn new(width: i32, height: i32, _: &'static str, _: bool) -> Self {
+pub struct Window {
+    connection: *const xcb_connection_t,
+}
+impl super::WindowImpl for Window {
+    fn new(width: i32, height: i32, _: &'static str, _: bool) -> Self {
         let connection = unsafe { xcb_connect(std::ptr::null(), std::ptr::null_mut()) };
         let screen = unsafe { xcb_setup_roots_iterator(xcb_get_setup(connection)).data };
         let wid = unsafe { xcb_generate_id(connection) };
@@ -111,18 +125,23 @@ impl super::Window {
                 10,
                 XCB_WINDOW_CLASS_INPUT_OUTPUT,
                 (*screen).root_visual,
-                0,
-                std::ptr::null(),
+                XCB_CW_EVENT_MASK,
+                [XCB_EVENT_MASK_EXPOSURE].as_ptr() as *const c_void,
             )
         };
         unsafe { xcb_map_window(connection, wid) };
         unsafe { xcb_flush(connection) };
-        Self {
-            window: connection,
-        }
+        Self { connection }
     }
-    pub fn run(self, f: fn()) {
+    fn run(self, f: fn()) {
         loop {
+            let event = unsafe { xcb_wait_for_event(self.connection) };
+            if event == std::ptr::null() {
+                break;
+            }
+            match unsafe { (*event).response_type & !0x80 } {
+                _ => (),
+            }
             f();
         }
     }
