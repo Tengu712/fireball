@@ -5,7 +5,11 @@ type ATOM = u16;
 type BOOL = c_int;
 type DWORD = c_ulong;
 type HANDLE = PVOID;
+type HBRUSH = HANDLE;
+type HCURSOR = HICON;
+type HICON = HANDLE;
 type HINSTANCE = HANDLE;
+type HMENU = HANDLE;
 type HMODULE = HINSTANCE;
 type HWND = HANDLE;
 type LONG = c_long;
@@ -16,6 +20,7 @@ type LPMSG = *mut MSG;
 type LRESULT = isize;
 type PVOID = *const c_void;
 type UINT = u32;
+type WNDPROC = *const c_void; // !
 type WPARAM = usize;
 
 const PM_REMOVE: UINT = 0x0001;
@@ -64,16 +69,16 @@ struct POINT {
 struct WNDCLASSEXA {
     cbSize: UINT,
     style: UINT,
-    lpfnWndProc: *const c_void, // !
+    lpfnWndProc: WNDPROC,
     cbClsExtra: c_int,
     cbWndExtra: c_int,
     hInstance: HINSTANCE,
-    hIcon: *const c_void,         // !
-    hCursor: *const c_void,       // !
-    hbrBackground: *const c_void, // !
+    hIcon: HICON,
+    hCursor: HCURSOR,
+    hbrBackground: HBRUSH,
     lpszMenuName: LPCSTR,
     lpszClassName: LPCSTR,
-    hIconSm: *const c_void, // !
+    hIconSm: HICON,
 }
 
 #[link(name = "user32")]
@@ -88,7 +93,7 @@ extern "stdcall" {
         nWidth: c_int,
         nHeight: c_int,
         hWndParent: HWND,
-        hMenu: *const c_void, // !
+        hMenu: HMENU,
         hInstance: HINSTANCE,
         lpParam: LPVOID,
     ) -> HWND;

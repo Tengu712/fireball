@@ -1,12 +1,13 @@
-// use std::ffi::CString;
+use std::ffi::CString;
 use std::{ffi::CString, os::raw::*};
 
 #[allow(non_camel_case_types)]
 type xcb_atom_t = u32;
 #[allow(non_camel_case_types)]
 type xcb_colormap_t = u32;
+/// Incomplete type. `typedef struct xcb_connection_t xcb_connection_t;`
 #[allow(non_camel_case_types)]
-type xcb_connection_t = c_void; // !
+type xcb_connection_t = c_void;
 #[allow(non_camel_case_types)]
 type xcb_keycode_t = u8;
 #[allow(non_camel_case_types)]

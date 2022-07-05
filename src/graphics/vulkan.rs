@@ -12,7 +12,8 @@ type PFN_vkInternalFreeNotification = *const c_void; // !
 #[allow(non_camel_case_types)]
 type PFN_vkReallocationFunction = *const c_void; // !
 type VkFlags = u32;
-type VkInstance = u64; // !
+/// Incomplete type. `typedef struct VkInstance_T* VkInstance;`
+type VkInstance = *const c_void;
 type VkInstanceCreateFlags = VkFlags;
 type VkResult = i32;
 type VkStructureType = u32;
@@ -100,7 +101,7 @@ impl Vulkan {
             enabledExtensionCount: 0,
             ppEnabledExtensionNames: std::ptr::null(),
         };
-        let mut instance = Default::default();
+        let mut instance = std::ptr::null();
         let res = unsafe { vkCreateInstance(&create_info, std::ptr::null(), &mut instance) };
         if res != VK_SUCCESS {
             panic!("[fatal error] failed to create vulkan instance. : {}", res);
