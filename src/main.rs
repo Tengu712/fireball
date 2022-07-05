@@ -1,10 +1,12 @@
 mod graphics;
 
-use graphics::window::*;
-use graphics::vulkan::*;
+use graphics::{vulkan::*, window::*};
 
 fn main() {
-    let window = Window::new(640, 480, "Title", true);
+    #[cfg(target_os = "windows")]
+    let window = windows::Window::new(640, 480, "Title", true);
+    #[cfg(target_os = "linux")]
+    let window = linux::Window::new(640, 480, "Title", true);
     let _ = Vulkan::new("appname");
     window.run(|| {});
 }

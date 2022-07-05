@@ -130,8 +130,8 @@ fn wnd_proc(h_wnd: HWND, msg: UINT, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
 pub struct Window {
     hwnd: HWND,
 }
-impl super::WindowImpl for Window {
-    fn new(width: i32, height: i32, title: &'static str, is_windowed: bool) -> Self {
+impl Window {
+    pub fn new(width: i32, height: i32, title: &'static str, is_windowed: bool) -> Self {
         let (style, cmd_show) = if is_windowed {
             (WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX, SW_SHOWDEFAULT)
         } else {
@@ -180,7 +180,7 @@ impl super::WindowImpl for Window {
         unsafe { ShowCursor(if is_windowed { 1 } else { 0 }) };
         Self { hwnd }
     }
-    fn run(self, f: fn()) {
+    pub fn run(self, f: fn()) {
         let mut msg = Default::default();
         loop {
             if unsafe { PeekMessageA(&mut msg, self.hwnd, 0, 0, PM_REMOVE) != 0 } {

@@ -122,8 +122,8 @@ extern "C" {
 pub struct Window {
     connection: *const xcb_connection_t,
 }
-impl super::WindowImpl for Window {
-    fn new(width: i32, height: i32, title: &'static str, _: bool) -> Self {
+impl Window {
+    pub fn new(width: u16, height: u16, title: &'static str, _: bool) -> Self {
         let connection = unsafe { xcb_connect(std::ptr::null(), std::ptr::null_mut()) };
         let screen = unsafe { xcb_setup_roots_iterator(xcb_get_setup(connection)).data };
         let wid = unsafe { xcb_generate_id(connection) };
@@ -135,8 +135,8 @@ impl super::WindowImpl for Window {
                 (*screen).root,
                 0,
                 0,
-                width as u16,
-                height as u16,
+                width,
+                height,
                 10,
                 XCB_WINDOW_CLASS_INPUT_OUTPUT,
                 (*screen).root_visual,
@@ -161,7 +161,7 @@ impl super::WindowImpl for Window {
         unsafe { xcb_flush(connection) };
         Self { connection }
     }
-    fn run(self, f: fn()) {
+    pub fn run(self, f: fn()) {
         loop {
             let event = unsafe { xcb_wait_for_event(self.connection) };
             if event == std::ptr::null() {
