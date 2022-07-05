@@ -1,4 +1,3 @@
-use core::panic;
 use std::ffi::CString;
 use std::os::raw::*;
 
