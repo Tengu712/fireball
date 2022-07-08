@@ -1,5 +1,5 @@
 use std::ffi::CString;
-use std::{ffi::CString, os::raw::*};
+use std::os::raw::*;
 
 #[allow(non_camel_case_types)]
 type xcb_atom_t = u32;
