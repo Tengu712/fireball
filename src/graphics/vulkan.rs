@@ -38,15 +38,33 @@ fn create_instance(appname: &'static str) -> VkInstance {
         engineVersion: VK_MAKE_VERSION(1, 0, 0),
         apiVersion: VK_API_VERSION_1_1,
     };
+    let mut cnt = 0;
+    let res = unsafe {
+        vkEnumerateInstanceExtensionProperties(std::ptr::null(), &mut cnt, std::ptr::null_mut())
+    };
+    check(res, "get the number of instance extension props");
+    let mut props = Vec::with_capacity(cnt as usize);
+    let res = unsafe {
+        vkEnumerateInstanceExtensionProperties(std::ptr::null(), &mut cnt, props.as_mut_ptr())
+    };
+    check(res, "enumerate instance extension props");
+    let mut extensions = Vec::with_capacity(cnt as usize);
+    for i in 0..cnt {
+        extensions.push(unsafe { (*props.get_unchecked(i as usize)).extensionName.as_ptr() });
+    }
+    #[cfg(not(debug_assertions))]
+    let layers = [];
+    #[cfg(debug_assertions)]
+    let layers = ["VK_LAYER_KHRONOS_validation\0".as_ptr() as *const c_char];
     let create_info = VkInstanceCreateInfo {
         sType: VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         pNext: std::ptr::null(),
         flags: 0,
         pApplicationInfo: &app_info,
-        enabledLayerCount: 0,
-        ppEnabledLayerNames: std::ptr::null(),
-        enabledExtensionCount: 0,
-        ppEnabledExtensionNames: std::ptr::null(),
+        enabledLayerCount: layers.len() as u32,
+        ppEnabledLayerNames: layers.as_ptr(),
+        enabledExtensionCount: extensions.len() as u32,
+        ppEnabledExtensionNames: extensions.as_ptr(),
     };
     let mut instance = std::ptr::null();
     let res = unsafe { vkCreateInstance(&create_info, std::ptr::null(), &mut instance) };

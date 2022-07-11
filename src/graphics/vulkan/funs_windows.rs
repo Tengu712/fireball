@@ -25,6 +25,11 @@ extern "C" {
         pPropertyCount: *mut u32,
         pProperties: *mut VkExtensionProperties,
     ) -> VkResult;
+    pub fn vkEnumerateInstanceExtensionProperties(
+        pLayerName: *const c_char,
+        pPropertyCount: *mut u32,
+        pProperties: *mut VkExtensionProperties,
+    ) -> VkResult;
     pub fn vkEnumeratePhysicalDevices(
         instance: VkInstance,
         pPhysicalDeviceCount: *mut u32,
