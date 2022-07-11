@@ -22,6 +22,7 @@ impl Vulkan {
         let (physical_device, _) = select_physical_device(&instance);
         let queue_family_index = get_device_queue_index(&physical_device);
         let logical_device = create_logical_device(&physical_device, queue_family_index);
+        let _ = get_device_queue(&logical_device, queue_family_index);
         let _ = create_command_pool(&logical_device, queue_family_index);
         Self
     }
@@ -145,6 +146,11 @@ fn create_logical_device(physical_device: &VkPhysicalDevice, queue_family_index:
     };
     check(res, "create logical device");
     device
+}
+fn get_device_queue(logical_device: &VkDevice, queue_family_index: u32) -> VkQueue {
+    let mut device_queue = std::ptr::null();
+    unsafe { vkGetDeviceQueue(*logical_device, queue_family_index, 0, &mut device_queue) };
+    device_queue
 }
 fn create_command_pool(logical_device: &VkDevice, queue_family_index: u32) -> VkCommandPool {
     let create_info = VkCommandPoolCreateInfo {

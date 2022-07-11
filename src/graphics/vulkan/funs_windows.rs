@@ -30,6 +30,12 @@ extern "C" {
         pPhysicalDeviceCount: *mut u32,
         pPhysicalDevices: *mut VkPhysicalDevice,
     ) -> VkResult;
+    pub fn vkGetDeviceQueue(
+        device: VkDevice,
+        queueFamilyIndex: u32,
+        queueIndex: u32,
+        pQueue: *const VkQueue,
+    ) -> c_void;
     pub fn vkGetPhysicalDeviceMemoryProperties(
         physicalDevice: VkPhysicalDevice,
         pMemoryProperties: *mut VkPhysicalDeviceMemoryProperties,

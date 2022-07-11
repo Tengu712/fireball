@@ -30,6 +30,8 @@ pub type VkMemoryHeapFlags = VkFlags;
 pub type VkMemoryPropertyFlags = VkFlags;
 /// Incomplete type. `typedef struct VkPhysicalDevice_T* VkPhysicalDevice;`
 pub type VkPhysicalDevice = *const c_void;
+/// Incomplete type. `typedef struct VkQueue_T* VkQueue;`
+pub type VkQueue = *const c_void;
 pub type VkQueueFlags = VkFlags;
 pub type VkResult = i32;
 pub type VkStructureType = u32;
