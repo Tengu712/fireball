@@ -21,7 +21,8 @@ impl Vulkan {
         let instance = create_instance(appname);
         let (physical_device, _) = select_physical_device(&instance);
         let queue_family_index = get_device_queue_index(&physical_device);
-        let _ = create_logical_device(&physical_device, queue_family_index);
+        let logical_device = create_logical_device(&physical_device, queue_family_index);
+        let _ = create_command_pool(&logical_device, queue_family_index);
         Self
     }
 }
@@ -144,6 +145,25 @@ fn create_logical_device(physical_device: &VkPhysicalDevice, queue_family_index:
     };
     check(res, "create logical device");
     device
+}
+fn create_command_pool(logical_device: &VkDevice, queue_family_index: u32) -> VkCommandPool {
+    let create_info = VkCommandPoolCreateInfo {
+        sType: VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        pNext: std::ptr::null(),
+        flags: VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        queueFamilyIndex: queue_family_index,
+    };
+    let mut command_pool = std::ptr::null();
+    let res = unsafe {
+        vkCreateCommandPool(
+            *logical_device,
+            &create_info,
+            std::ptr::null(),
+            &mut command_pool,
+        )
+    };
+    check(res, "create command pool");
+    command_pool
 }
 fn check(res: VkResult, msg: &'static str) {
     assert!(

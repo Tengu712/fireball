@@ -2,6 +2,12 @@ use super::*;
 
 #[link(name = "vulkan-1")]
 extern "C" {
+    pub fn vkCreateCommandPool(
+        device: VkDevice,
+        pCreateInfo: *const VkCommandPoolCreateInfo,
+        pAllocator: *const VkAllocationCallbacks,
+        pCommandPool: *const VkCommandPool,
+    ) -> VkResult;
     pub fn vkCreateDevice(
         physicalDevice: VkPhysicalDevice,
         pCreateInfo: *const VkDeviceCreateInfo,

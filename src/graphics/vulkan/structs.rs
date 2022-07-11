@@ -23,6 +23,14 @@ pub struct VkApplicationInfo {
 }
 #[repr(C)]
 #[allow(non_snake_case)]
+pub struct VkCommandPoolCreateInfo {
+    pub sType: VkStructureType,
+    pub pNext: *const  c_void,
+    pub flags: VkCommandPoolCreateFlags,
+    pub queueFamilyIndex: u32,
+}
+#[repr(C)]
+#[allow(non_snake_case)]
 pub struct VkDeviceCreateInfo {
     pub sType: VkStructureType,
     pub pNext: *const c_void,
