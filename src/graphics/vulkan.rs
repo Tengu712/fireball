@@ -139,7 +139,19 @@ fn create_logical_device(physical_device: &VkPhysicalDevice, queue_family_index:
     check(res, "enumerate device extension props");
     let mut extensions = Vec::with_capacity(cnt as usize);
     for i in 0..cnt {
-        extensions.push(unsafe { props.get_unchecked(i as usize).extensionName.as_ptr() });
+        let trg_str = unsafe { props.get_unchecked(i as usize) }
+            .extensionName
+            .iter()
+            .map(|n| *n as u8 as char)
+            .filter(|n| *n != '\0')
+            .collect::<String>();
+        if trg_str != "VK_EXT_buffer_device_address" {
+            extensions.push(
+                unsafe { props.get_unchecked(i as usize) }
+                    .extensionName
+                    .as_ptr(),
+            );
+        }
     }
     let create_info = VkDeviceCreateInfo {
         sType: VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
@@ -149,7 +161,7 @@ fn create_logical_device(physical_device: &VkPhysicalDevice, queue_family_index:
         pQueueCreateInfos: &queue_create_info,
         enabledLayerCount: 0,
         ppEnabledLayerNames: std::ptr::null(),
-        enabledExtensionCount: cnt,
+        enabledExtensionCount: extensions.len() as u32,
         ppEnabledExtensionNames: extensions.as_ptr(),
         pEnabledFeatures: std::ptr::null(),
     };
