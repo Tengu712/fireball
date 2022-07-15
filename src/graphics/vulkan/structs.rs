@@ -25,7 +25,7 @@ pub struct VkApplicationInfo {
 #[allow(non_snake_case)]
 pub struct VkCommandPoolCreateInfo {
     pub sType: VkStructureType,
-    pub pNext: *const  c_void,
+    pub pNext: *const c_void,
     pub flags: VkCommandPoolCreateFlags,
     pub queueFamilyIndex: u32,
 }
@@ -164,4 +164,14 @@ pub struct VkQueueFamilyProperties {
     pub queueCount: u32,
     pub timestampValidBits: u32,
     pub minImageTransferGranularity: VkExtent3D,
+}
+#[cfg(target_os = "linux")]
+#[repr(C)]
+#[allow(non_snake_case)]
+pub struct VkXcbSurfaceCreateInfoKHR {
+    pub sType: VkStructureType,
+    pub pNext: *const c_void,
+    pub flags: VkXcbSurfaceCreateFlagsKHR,
+    pub connection: *const xcb_connection_t,
+    pub window: xcb_window_t,
 }

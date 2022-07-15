@@ -35,6 +35,13 @@ pub type VkQueue = *const c_void;
 pub type VkQueueFlags = VkFlags;
 pub type VkResult = i32;
 pub type VkStructureType = u32;
+/// Incomplete type. `typedef struct VkSurfaceKHR_T* VkSurfaceKHR;`
+#[cfg(target_pointer_width = "64")]
+pub type VkSurfaceKHR = *const c_void;
+#[cfg(target_pointer_width = "32")]
+pub type VkSurfaceKHR = u64;
+#[cfg(target_os = "linux")]
+pub type VkXcbSurfaceCreateFlagsKHR = VkFlags;
 
 pub const VK_API_VERSION_1_1: u32 = VK_MAKE_API_VERSION(0, 1, 1, 0);
 pub const VK_MAX_EXTENSION_NAME_SIZE: usize = 256;
@@ -44,6 +51,8 @@ pub const VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO: VkStructureType = 1;
 pub const VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO: VkStructureType = 2;
 pub const VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO: VkStructureType = 3;
 pub const VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO: VkStructureType = 39;
+#[cfg(target_os = "linux")]
+pub const VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR: VkStructureType = 1000005000;
 pub const VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: VkCommandPoolCreateFlags = 2;
 pub const VK_SUCCESS: VkResult = 0;
 pub const VK_QUEUE_GRAPHICS_BIT: u32 = 1;

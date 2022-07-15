@@ -2,25 +2,25 @@ use std::ffi::CString;
 use std::os::raw::*;
 
 #[allow(non_camel_case_types)]
-type xcb_atom_t = u32;
+pub type xcb_atom_t = u32;
 #[allow(non_camel_case_types)]
-type xcb_colormap_t = u32;
-/// Incomplete type. `typedef struct xcb_connection_t xcb_connection_t;`
+pub type xcb_colormap_t = u32;
+/// Incomplete pub type. `typedef struct xcb_connection_t xcb_connection_t;`
 #[allow(non_camel_case_types)]
-type xcb_connection_t = c_void;
+pub type xcb_connection_t = c_void;
 #[allow(non_camel_case_types)]
-type xcb_keycode_t = u8;
+pub type xcb_keycode_t = u8;
 #[allow(non_camel_case_types)]
-type xcb_visualid_t = u32;
+pub type xcb_visualid_t = u32;
 #[allow(non_camel_case_types)]
-type xcb_window_t = u32;
+pub type xcb_window_t = u32;
 
-const XCB_ATOM_STRING: xcb_atom_t = 31;
-const XCB_ATOM_WM_NAME: xcb_atom_t = 39;
-const XCB_COPY_FROM_PARENT: u8 = 0;
-const XCB_CW_EVENT_MASK: u32 = 2048;
-const XCB_EVENT_MASK_EXPOSURE: u32 = 32768;
-const XCB_WINDOW_CLASS_INPUT_OUTPUT: u16 = 1;
+pub const XCB_ATOM_STRING: xcb_atom_t = 31;
+pub const XCB_ATOM_WM_NAME: xcb_atom_t = 39;
+pub const XCB_COPY_FROM_PARENT: u8 = 0;
+pub const XCB_CW_EVENT_MASK: u32 = 2048;
+pub const XCB_EVENT_MASK_EXPOSURE: u32 = 32768;
+pub const XCB_WINDOW_CLASS_INPUT_OUTPUT: u16 = 1;
 
 #[repr(C)]
 struct xcb_generic_event_t {
@@ -119,10 +119,11 @@ extern "C" {
     fn xcb_wait_for_event(c: *const xcb_connection_t) -> *const xcb_generic_event_t;
 }
 
-pub struct Window {
-    connection: *const xcb_connection_t,
+pub struct XcbWindow {
+    pub connection: *const xcb_connection_t,
+    pub wid: xcb_window_t,
 }
-impl Window {
+impl XcbWindow {
     pub fn new(width: u16, height: u16, title: &'static str, _: bool) -> Self {
         let connection = unsafe { xcb_connect(std::ptr::null(), std::ptr::null_mut()) };
         let screen = unsafe { xcb_setup_roots_iterator(xcb_get_setup(connection)).data };
@@ -159,7 +160,7 @@ impl Window {
         };
         unsafe { xcb_map_window(connection, wid) };
         unsafe { xcb_flush(connection) };
-        Self { connection }
+        Self { connection, wid }
     }
     pub fn run(self, f: fn()) {
         loop {

@@ -12,18 +12,30 @@ use funs_windows::*;
 use structs::*;
 use type_const::*;
 
+#[cfg(target_os = "linux")]
+use super::window::linux::*;
 use std::ffi::CString;
 use std::os::raw::*;
 
+pub trait VulkanImpl<T> {
+    fn new(appname: &'static str, window: &T) -> Self;
+}
 pub struct Vulkan;
 impl Vulkan {
-    pub fn new(appname: &'static str) -> Self {
+    fn common(appname: &'static str) -> (VkInstance, VkDevice) {
         let instance = create_instance(appname);
         let (physical_device, _) = select_physical_device(&instance);
         let queue_family_index = get_device_queue_index(&physical_device);
         let logical_device = create_logical_device(&physical_device, queue_family_index);
         let _ = get_device_queue(&logical_device, queue_family_index);
         let _ = create_command_pool(&logical_device, queue_family_index);
+        (instance, logical_device)
+    }
+}
+impl VulkanImpl<XcbWindow> for Vulkan {
+    fn new(appname: &'static str, window: &XcbWindow) -> Self {
+        let (instance, logical_device) = Vulkan::common(appname);
+        create_xcb_surface(instance, window);
         Self
     }
 }
@@ -52,9 +64,9 @@ fn create_instance(appname: &'static str) -> VkInstance {
     for i in 0..cnt {
         extensions.push(unsafe { (*props.get_unchecked(i as usize)).extensionName.as_ptr() });
     }
-    #[cfg(not(debug_assertions))]
-    let layers = [];
     #[cfg(debug_assertions)]
+    let layers = [];
+    #[cfg(not(debug_assertions))]
     let layers = ["VK_LAYER_KHRONOS_validation\0".as_ptr() as *const c_char];
     let create_info = VkInstanceCreateInfo {
         sType: VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -200,6 +212,19 @@ fn create_command_pool(logical_device: &VkDevice, queue_family_index: u32) -> Vk
     };
     check(res, "create command pool");
     command_pool
+}
+fn create_xcb_surface(instance: VkInstance, window: &XcbWindow) {
+    let create_info = VkXcbSurfaceCreateInfoKHR {
+        sType: VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
+        pNext: std::ptr::null(),
+        flags: 0,
+        connection: window.connection,
+        window: window.wid,
+    };
+    let mut surface = std::ptr::null();
+    let res =
+        unsafe { vkCreateXcbSurfaceKHR(instance, &create_info, std::ptr::null(), &mut surface) };
+    check(res, "create surface");
 }
 fn check(res: VkResult, msg: &'static str) {
     assert!(
